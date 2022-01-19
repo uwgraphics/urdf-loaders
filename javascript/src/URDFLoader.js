@@ -638,7 +638,6 @@ class URDFLoader {
 
     // Default mesh loading function
     defaultMeshLoader(path, manager, done) {
-
         if (/\.stl$/i.test(path)) {
 
             const loader = new STLLoader(manager);
@@ -653,9 +652,20 @@ class URDFLoader {
             loader.load(path, dae => done(dae.scene));
 
         } else {
-
-            console.warn(`URDFLoader: Could not load model at ${ path }.\nNo loader available`);
-
+            // for generated object urls
+            if (/\.stlX$/i.test(path)) {
+                const loader = new STLLoader(manager);
+                loader.load(path.replace(".stlX", ""), geom => {
+                    const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
+                    done(mesh);
+                });
+            } else if (/\.daeX$/i.test(path)) {
+                const loader = new ColladaLoader(manager);
+                loader.load(path.replace(".daeX", ""), dae => done(dae.scene));
+            }
+            else {
+                console.warn(`URDFLoader: Could not load model at ${ path }.\nNo loader available`);
+            }
         }
 
     }
